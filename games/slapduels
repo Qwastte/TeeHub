@@ -4,6 +4,8 @@ local UIS = game:GetService("UserInputService")
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local folder = workspace:FindFirstChild("InvisibleWalls")
+local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
 
 
 local ENABLED = false
@@ -51,7 +53,7 @@ end
 
 
 local Window = WindUI:CreateWindow({
-	Title = "TeeHub — Slap Duels",
+	Title = "TeeHub - Slap Duels",
 	Icon = "activity",
 	Folder = "teehub",
 	Size = UDim2.fromOffset(580, 460),
@@ -66,8 +68,14 @@ local Window = WindUI:CreateWindow({
 	ScrollBarEnabled = false,
     User = {
         Enabled = true,
-    },
-    Background = "https://github.com/Qwastte/TeeHub/raw/refs/heads/main/games/docs/background.webm"
+         Callback = function()
+            WindUI:Notify({
+                Title = "Your Profile",
+                Content = "literally you lol",
+                Duration = 3,
+            })
+        end
+     }
 })
 
 local Tab = Window:Tab({ Title = "Player", Icon = "user", Locked = false })
@@ -103,6 +111,37 @@ Tab:Slider({
 	end
 })
 
+Tab:Slider({
+	Title = "Walk Speed",
+	Step = 1,
+	Value = {
+		Min = 16,
+		Max = 150,
+		Default = humanoid.WalkSpeed,
+	},
+	Callback = function(value)
+		if humanoid then
+			humanoid.WalkSpeed = value
+		end
+	end
+})
+
+Tab:Slider({
+	Title = "Jump Height",
+	Step = 1,
+	Value = {
+		Min = 7.2,
+		Max = 200,
+		Default = humanoid.JumpHeight,
+	},
+	Callback = function(value)
+		if humanoid then
+			humanoid.UseJumpPower = false
+			humanoid.JumpHeight = value
+		end
+	end
+})
+
 local Button = Tab3:Button({
     Title = "Destroy invisible walls",
     Desc = "Removes invisible walls in the lobby",
@@ -111,7 +150,7 @@ local Button = Tab3:Button({
 })
 
 Window:Tag({
-    Title = "v0.0.2",
+    Title = "v0.0.5",
     Icon = "github",
     Color = Color3.fromHex("#30ff6a"),
     Radius = 10, -- from 0 to 13
@@ -119,7 +158,7 @@ Window:Tag({
 
 local Keybind = Tab3:Keybind({
     Title = "Close Window",
-    Desc = "Keybind to close & open ui",
+    Desc = "Keybind to close & open menu",
     Value = "RightAlt",
     Callback = function(v)
         Window:SetToggleKey(Enum.KeyCode[v])
