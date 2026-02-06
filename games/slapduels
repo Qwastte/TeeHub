@@ -1,5 +1,6 @@
 local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
 
+local UIS = game:GetService("UserInputService")
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local folder = workspace:FindFirstChild("InvisibleWalls")
@@ -50,9 +51,8 @@ end
 
 
 local Window = WindUI:CreateWindow({
-	Title = "TeeHub - Slap Duels",
-	Icon = "door-open",
-	Author = "by Qwaste & gtoxlol",
+	Title = "TeeHub — Slap Duels",
+	Icon = "activity",
 	Folder = "teehub",
 	Size = UDim2.fromOffset(580, 460),
 	MinSize = Vector2.new(560, 350),
@@ -64,8 +64,11 @@ local Window = WindUI:CreateWindow({
 	BackgroundImageTransparency = 0.42,
 	HideSearchBar = true,
 	ScrollBarEnabled = false,
+    User = {
+        Enabled = true,
+    },
+    Background = "https://github.com/Qwastte/TeeHub/raw/refs/heads/main/games/docs/background.webm"
 })
-
 
 local Tab = Window:Tab({ Title = "Player", Icon = "user", Locked = false })
 local Tab2 = Window:Tab({ Title = "Teleports", Icon = "cloud", Locked = false })
@@ -75,7 +78,7 @@ local Tab3 = Window:Tab({ Title = "Misc", Icon = "droplet", Locked = false })
 Tab:Toggle({
 	Title = "Hitbox",
 	Desc = "Enable custom hitboxes",
-	Icon = "target",
+	Icon = "x",
 	Type = "Checkbox",
 	Value = false,
 	Callback = function(state)
@@ -108,8 +111,17 @@ local Button = Tab3:Button({
 })
 
 Window:Tag({
-    Title = "v1",
+    Title = "v0.0.2",
     Icon = "github",
     Color = Color3.fromHex("#30ff6a"),
     Radius = 10, -- from 0 to 13
+})
+
+local Keybind = Tab3:Keybind({
+    Title = "Close Window",
+    Desc = "Keybind to close & open ui",
+    Value = "RightAlt",
+    Callback = function(v)
+        Window:SetToggleKey(Enum.KeyCode[v])
+    end
 })
