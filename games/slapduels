@@ -87,7 +87,7 @@ Tab:Toggle({
 
 Tab:Slider({
 	Title = "Hitbox Size",
-	Desc = "Изменяет размер хитбокса",
+	Desc = "Changes the size of the hitboxes",
 	Step = 1,
 	Value = {
 		Min = 5,
