@@ -5,3 +5,5 @@ Loadstring:
 
 Games supported now:
 + **Jump Into Pocoyo**
++ **Slap Duels** (WIP)
++ **Apeirophobia** (WIP)
