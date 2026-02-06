@@ -1,7 +1,7 @@
 local Notification = loadstring(game:HttpGet("https://api.irisapp.ca/Scripts/IrisBetterNotifications.lua"))()
 
 local games = {
-    [{108143110454419}] = "https://raw.githubusercontent.com/Qwastte/TeeHub/refs/heads/main/games/jip",
+    [{108143110454419}] = "https://raw.githubusercontent.com/Qwastte/TeeHub/refs/heads/main/games/Jump%20Into%20Pocoyo",
     [{139766023909499}] = "https://raw.githubusercontent.com/Qwastte/TeeHub/refs/heads/main/games/slapduels",
 }
 
