@@ -1,20 +1,52 @@
-local Link = loadstring(game:HttpGet('https://raw.githubusercontent.com/GhostDuckyy/UI-Libraries/refs/heads/main/Playstation%20Ui%20Library/source.lua'))()
-
-local Win = Link:CreateWindow('Tee Hub','Qwaste & gtoxlol') -- :CreateWindow(Title,Info) Note: info no space
-
-local Tab = Win:addPage('General', 2, true, 6) -- :addPage(Title, Scoll Size, Visible, elementspacing)
--- Note: Dont have update function
+local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
 
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 local char = player.Character or player.CharacterAdded:Wait()
 local hrp = char:WaitForChild("HumanoidRootPart")
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+local UserInputService = game:GetService("UserInputService")
 
 local enabled = false
 local running = false
+local infiniteJump = false
+local JUMP_FORCE = 60
+local playersHidden = false
+
 
 local Checkpoint1 = CFrame.new(0, 8.5, -66)
 local WinPart = CFrame.new(4.49998856, 847, -1423)
+
+
+player.CharacterAdded:Connect(function(char)
+	character = char
+	humanoid = char:WaitForChild("Humanoid")
+    hrp = char:WaitForChild("HumanoidRootPart")
+    humanoid.UseJumpPower = false
+end)
+
+Players.PlayerAdded:Connect(function(plr)
+	plr.CharacterAdded:Connect(function(char)
+		if playersHidden then
+			task.wait(0.2)
+			setCharacterVisible(char, false)
+		end
+	end)
+end)
+
+
+UserInputService.InputBegan:Connect(function(input, gp)
+	if gp then return end
+	if input.KeyCode == Enum.KeyCode.Space and infiniteJump then
+		hrp.AssemblyLinearVelocity = Vector3.new(
+			hrp.AssemblyLinearVelocity.X,
+			JUMP_FORCE,
+			hrp.AssemblyLinearVelocity.Z
+		)
+	end
+end)
+
 
 local function teleportLoop()
 	if running then return end
@@ -36,9 +68,123 @@ local function teleportLoop()
 	end)
 end
 
-Tab:addToggle('Auto Win', function(value)
-	enabled = value
-	if value then
-		teleportLoop()
+local function setCharacterVisible(player, visible)
+	if player == LocalPlayer then return end 
+	if not player.Character then return end
+
+	for _, obj in ipairs(player.Character:GetDescendants()) do
+		if obj:IsA("BasePart") then
+			obj.LocalTransparencyModifier = visible and 0 or 1
+		elseif obj:IsA("Decal") then
+			obj.Transparency = visible and 0 or 1
+		elseif obj:IsA("BillboardGui") then
+			obj.Enabled = visible
+		end
 	end
-end)
+end
+
+local function hideAllPlayers()
+	for _, plr in ipairs(Players:GetPlayers()) do
+		if plr ~= LocalPlayer and plr.Character then
+			setCharacterVisible(plr.Character, false)
+		end
+	end
+	playersHidden = true
+end
+
+
+local function showAllPlayers()
+	for _, plr in ipairs(Players:GetPlayers()) do
+		if plr ~= LocalPlayer and plr.Character then
+			setCharacterVisible(plr.Character, true)
+		end
+	end
+	playersHidden = false
+end
+
+
+local Window = WindUI:CreateWindow({
+    Title = "TeeHub - Jump Into Pocoyo",
+	Acrylic = true,
+    Icon = "candy-cane",
+	Transparent = true,
+	HidePanelBackground = false,
+})
+
+local Tab2 = Window:Tab({ Title = "Main", Icon = "droplet", Locked = false, })
+local Tab = Window:Tab({ Title = "Player", Icon = "droplet", Locked = false, })
+
+local Toggle = Tab2:Toggle({
+    Title = "Autowin",
+    Icon = "x",
+    Type = "Checkbox",
+    Value = false, -- default value
+    Callback = function(state) 
+		enabled = state
+        teleportLoop()
+    end
+})
+
+Tab:Slider({
+	Title = "Walk Speed",
+	Step = 1,
+	Value = {
+		Min = 18,
+		Max = 150,
+		Default = humanoid.WalkSpeed,
+	},
+	Callback = function(value)
+		if humanoid then
+			humanoid.WalkSpeed = value
+		end
+	end
+})
+
+Tab:Slider({
+	Title = "Jump Height",
+	Step = 1,
+	Value = {
+		Min = 7.2,
+		Max = 200,
+		Default = humanoid.JumpHeight,
+	},
+	Callback = function(value)
+		if humanoid then
+			humanoid.UseJumpPower = false
+			humanoid.JumpHeight = value
+		end
+	end
+})
+
+Tab:Toggle({
+	Title = "Infinite Jump",
+	Icon = "x",
+	Type = "Checkbox",
+	Value = false,
+	Callback = function(state)
+		infiniteJump = state
+	end
+})
+
+Tab:Toggle({
+	Title = "Hide All Players",
+	Icon = "x",
+	Type = "Checkbox",
+	Value = false,
+	Callback = function(state)
+		if state then
+			hideAllPlayers()
+		else
+			showAllPlayers()
+		end
+	end
+})
+
+local Keybind = Tab:Keybind({
+    Title = "Keybind",
+    Desc = "Keybind to open ui",
+    Value = "RightAlt",
+    Callback = function(v)
+        Window:SetToggleKey(Enum.KeyCode[v])
+    end
+})
