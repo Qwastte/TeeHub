@@ -2,7 +2,7 @@ local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/rel
 
 local Window = WindUI:CreateWindow({
     Title = "TeeHub - Apeirophobia",
-    Icon = "door-open", -- lucide icon
+    Icon = "box", -- lucide icon
     Author = "by Qwaste & gtoxlol",
     Folder = "teehub",
     
