@@ -1,67 +1,115 @@
 local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
 
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local folder = workspace:FindFirstChild("InvisibleWalls")
+
+
+local ENABLED = false
+local HITBOX_SIZE = 10
+local TRANSPARENCY = 0.35
+local DEFAULT_SIZE = Vector3.new(2, 1, 1)
+local HITBOX_COLOR = Color3.fromRGB(255, 60, 60)
+
+
+local function getRoot(character)
+	return character and character:FindFirstChild("HumanoidRootPart")
+end
+
+local function applyToCharacter(character)
+	local root = getRoot(character)
+	if not root or not root:IsA("BasePart") then return end
+
+	root.CanCollide = false
+
+	if ENABLED then
+		root.Size = Vector3.new(HITBOX_SIZE, HITBOX_SIZE, HITBOX_SIZE)
+		root.Transparency = TRANSPARENCY
+		root.Material = Enum.Material.Neon
+		root.Color = HITBOX_COLOR
+	else
+		root.Size = DEFAULT_SIZE
+		root.Transparency = 0
+		root.Material = Enum.Material.Plastic
+	end
+end
+
+local function applyToAll()
+	for _, player in pairs(Players:GetPlayers()) do
+		if player ~= LocalPlayer and player.Character then
+			applyToCharacter(player.Character)
+		end
+	end
+end
+
+local function removewalls()
+    if folder then
+        folder:Destroy()
+    end
+end
+
+
 local Window = WindUI:CreateWindow({
-    Title = "TeeHub - Slap Duels",
-    Icon = "door-open", -- lucide icon
-    Author = "by Qwaste & gtoxlol",
-    Folder = "teehub",
-    
-    -- ↓ This all is Optional. You can remove it.
-    Size = UDim2.fromOffset(580, 460),
-    MinSize = Vector2.new(560, 350),
-    MaxSize = Vector2.new(850, 560),
-    Transparent = true,
-    Theme = "Dark",
-    Resizable = true,
-    SideBarWidth = 200,
-    BackgroundImageTransparency = 0.42,
-    HideSearchBar = true,
-    ScrollBarEnabled = false,
-    
-    
-    -- ↓ Optional. You can remove it.
-    User = {
-        Enabled = true,
-        Anonymous = false,
-        Callback = function()
-            print("clicked")
-        end,
-    },
-    
-    --       remove this all, 
-    -- !  ↓  if you DON'T need the key system
-    KeySystem = { 
-        -- ↓ Optional. You can remove it.
-        Key = {"67"},
-        
-        Note = "Experimental key system",
-        
-        
-        -- ↓ Optional. You can remove it.
-        URL = "https://discord.gg/ekpAakQRfP",
-        
-        -- ↓ Optional. You can remove it.
-        SaveKey = false, -- automatically save and load the key.
-        
-        -- ↓ Optional. You can remove it.
-        -- API = {} ← Services. Read about it below ↓
-    },
+	Title = "TeeHub - Slap Duels",
+	Icon = "door-open",
+	Author = "by Qwaste & gtoxlol",
+	Folder = "teehub",
+	Size = UDim2.fromOffset(580, 460),
+	MinSize = Vector2.new(560, 350),
+	MaxSize = Vector2.new(850, 560),
+	Transparent = true,
+	Theme = "Dark",
+	Resizable = true,
+	SideBarWidth = 200,
+	BackgroundImageTransparency = 0.42,
+	HideSearchBar = true,
+	ScrollBarEnabled = false,
 })
 
-local Tab = Window:Tab({
-    Title = "Player",
-    Icon = "user", -- optional
-    Locked = false,
+
+local Tab = Window:Tab({ Title = "Player", Icon = "user", Locked = false })
+local Tab2 = Window:Tab({ Title = "Teleports", Icon = "cloud", Locked = false })
+local Tab3 = Window:Tab({ Title = "Misc", Icon = "droplet", Locked = false })
+
+
+Tab:Toggle({
+	Title = "Hitbox",
+	Desc = "Enable custom hitboxes",
+	Icon = "target",
+	Type = "Checkbox",
+	Value = false,
+	Callback = function(state)
+		ENABLED = state
+		applyToAll()
+	end
 })
 
-local Tab = Window:Tab({
-    Title = "Teleports",
-    Icon = "cloud",
-    Locked = false,
+
+Tab:Slider({
+	Title = "Hitbox Size",
+	Desc = "Изменяет размер хитбокса",
+	Step = 1,
+	Value = {
+		Min = 5,
+		Max = 15,
+		Default = HITBOX_SIZE,
+	},
+	Callback = function(value)
+		HITBOX_SIZE = value
+		applyToAll() 
+	end
 })
 
-local Tab = Window:Tab({
-    Title = "Misc",
-    Icon = "droplet",
+local Button = Tab3:Button({
+    Title = "Destroy invisible walls",
+    Desc = "Removes invisible walls in the lobby",
     Locked = false,
+    Callback = removewalls
+})
+
+Window:Tag({
+    Title = "v1",
+    Icon = "github",
+    Color = Color3.fromHex("#30ff6a"),
+    Radius = 10, -- from 0 to 13
 })
