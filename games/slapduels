@@ -53,3 +53,15 @@ local Tab = Window:Tab({
     Icon = "user", -- optional
     Locked = false,
 })
+
+local Tab = Window:Tab({
+    Title = "Teleports",
+    Icon = "cloud",
+    Locked = false,
+})
+
+local Tab = Window:Tab({
+    Title = "Misc",
+    Icon = "droplet",
+    Locked = false,
+})
