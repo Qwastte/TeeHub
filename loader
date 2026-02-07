@@ -3,14 +3,14 @@ local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/rel
 local games = {
     [{108143110454419}] = "https://raw.githubusercontent.com/Qwastte/TeeHub/refs/heads/main/games/JumpIntoPocoyo",
     [{139766023909499}] = "https://raw.githubusercontent.com/Qwastte/TeeHub/refs/heads/main/games/slapduels",
-    [{10277607801}] = "https://raw.githubusercontent.com/Qwastte/TeeHub/refs/heads/main/games/apeirolobby"
-    [{10277635599}] = "https://raw.githubusercontent.com/Qwastte/TeeHub/refs/heads/main/games/apeirophobiac1"
-    [{14839391229}] = "https://raw.githubusercontent.com/Qwastte/TeeHub/refs/heads/main/games/apeirophobiac2"
+    [{10277607801}] = "https://raw.githubusercontent.com/Qwastte/TeeHub/refs/heads/main/games/apeirolobby",
+    [{10277635599}] = "https://raw.githubusercontent.com/Qwastte/TeeHub/refs/heads/main/games/apeirophobiac1",
+    [{14839391229}] = "https://raw.githubusercontent.com/Qwastte/TeeHub/refs/heads/main/games/apeirophobiac2",
 }
 
 for ids, url in next, games do
     if table.find(ids, game.PlaceId) then
-    WindUI:Notify({ Title = "TeeHub", Content = "Game supported, loading script..", Duration = 7, Icon = "activity", }),
+    WindUI:Notify({ Title = "TeeHub", Content = "Game supported, loading script..", Duration = 7, Icon = "activity" })
         loadstring(game:HttpGet(url))()
         break
     end
