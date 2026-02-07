@@ -4,7 +4,7 @@ local games = {
     [{108143110454419}] = "https://raw.githubusercontent.com/Qwastte/TeeHub/refs/heads/main/games/JumpIntoPocoyo",
     [{139766023909499}] = "https://raw.githubusercontent.com/Qwastte/TeeHub/refs/heads/main/games/slapduels",
     [{10277607801}] = "https://raw.githubusercontent.com/Qwastte/TeeHub/refs/heads/main/games/apeirolobby",
-    [{10277635599}] = "https://raw.githubusercontent.com/Qwastte/TeeHub/refs/heads/main/games/apeirophobiac1",
+    [{3761186887}] = "https://raw.githubusercontent.com/Qwastte/TeeHub/refs/heads/main/games/apeirophobiac1",
     [{14839391229}] = "https://raw.githubusercontent.com/Qwastte/TeeHub/refs/heads/main/games/apeirophobiac2",
 }
 
