@@ -1,1 +1,58 @@
-print("Script loaded")
+local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
+
+local Window = WindUI:CreateWindow({
+    Title = "TeeHub - Apeirophobia",
+    Icon = "activity",
+    Folder = "teehub",
+    
+    -- ↓ This all is Optional. You can remove it.
+    Size = UDim2.fromOffset(580, 460),
+    MinSize = Vector2.new(560, 350),
+    MaxSize = Vector2.new(850, 560),
+    Transparent = true,
+    Theme = "Dark",
+    Resizable = true,
+    SideBarWidth = 200,
+    BackgroundImageTransparency = 0.42,
+    HideSearchBar = true,
+    ScrollBarEnabled = false,
+    
+    User = {
+        Enabled = true,
+    },
+})
+
+Window:Tag({
+    Title = "v0.0.1a",
+    Icon = "github",
+    Color = Color3.fromHex("#30ff6a"),
+    Radius = 10, -- from 0 to 13
+})
+
+local Tab = Window:Tab({ Title = "Main", Icon = "user", Locked = false })
+local Tab2 = Window:Tab({ Title = "Teleports", Icon = "cloud", Locked = false })
+local Tab3 = Window:Tab({ Title = "Misc", Icon = "droplet", Locked = false })
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+local Keybind = Tab3:Keybind({
+    Title = "Close Window",
+    Desc = "Keybind to close & open menu",
+    Value = "RightAlt",
+    Callback = function(v)
+        Window:SetToggleKey(Enum.KeyCode[v])
+    end
+})
