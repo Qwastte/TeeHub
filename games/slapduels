@@ -180,5 +180,5 @@ Tab:Toggle({
 	Icon = "x",
 	Type = "Checkbox",
 	Value = false,
-
+	Locked = true,
 })
