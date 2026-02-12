@@ -1,15 +1,14 @@
 local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
 
-local LocalCharacter = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-local LocalHRP = LocalCharacter:WaitForChild("HumanoidRootPart")
-local Camera = workspace.CurrentCamera
-local LocalPlayer = Players.LocalPlayer
-
 local Players = game:GetService("Players")
 local Entities = workspace:WaitForChild("Entities")
 local RunService = game:GetService("RunService")
 local Lighting = game:GetService("Lighting")
 
+local LocalPlayer = Players.LocalPlayer
+local LocalCharacter = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+local LocalHRP = LocalCharacter:WaitForChild("HumanoidRootPart")
+local Camera = workspace.CurrentCamera
 
 local highlightsEnabled = false
 local highlights = {}
@@ -21,7 +20,20 @@ local entityCache = {}
 local renderConnection
 local childConnection
 local connection
+local playerESPEnabled = false
+local playerCache = {}
+local playerRenderConnection
 
+local Ignored = workspace:WaitForChild("Ignored")
+local Interacts = Ignored:WaitForChild("Interacts")
+
+local ValveFolder = Interacts:FindFirstChild("valve") 
+    or Interacts:FindFirstChild("Valve")
+
+
+local valveHighlights = {}
+local valveConnection
+local valveESPEnabled = false
 
 local function createHighlight(entity)
     if not highlightsEnabled then return end
@@ -53,15 +65,18 @@ local function toggleHighlight(state)
     highlightsEnabled = state
 
     if state then
+
         for _, entity in ipairs(Entities:GetChildren()) do
             createHighlight(entity)
         end
+
 
         connection = Entities.ChildAdded:Connect(function(child)
             createHighlight(child)
         end)
 
     else
+
         if connection then
             connection:Disconnect()
             connection = nil
@@ -141,13 +156,16 @@ local function updateESP(entity, comp)
 
     local distance = math.floor((LocalHRP.Position - hrp.Position).Magnitude)
 
+
     comp.Box.Size = Vector2.new(width, height)
     comp.Box.Position = Vector2.new(pos.X - width/2, pos.Y - height/2)
     comp.Box.Visible = true
 
+
     comp.Name.Text = entity.Name
     comp.Name.Position = Vector2.new(pos.X, pos.Y - height/2 - 15)
     comp.Name.Visible = true
+
 
     comp.Distance.Text = "["..distance.."m]"
     comp.Distance.Position = Vector2.new(pos.X, pos.Y + height/2 + 5)
@@ -157,17 +175,20 @@ end
 local function enableEntityESP()
     if renderConnection then return end
 
+
     for _, entity in ipairs(Entities:GetChildren()) do
         if entity:IsA("Model") then
             entityCache[entity] = createComponents()
         end
     end
 
+
     childConnection = Entities.ChildAdded:Connect(function(child)
         if entityESPEnabled and child:IsA("Model") then
             entityCache[child] = createComponents()
         end
     end)
+
 
     Entities.ChildRemoved:Connect(function(child)
         if entityCache[child] then
@@ -206,6 +227,7 @@ local function disableEntityESP()
     entityCache = {}
 end
 
+
 function toggleEntityESP(state)
     entityESPEnabled = state
 
@@ -238,6 +260,258 @@ local function toggleFullBright(state)
     end
 end
 
+local function createDrawing(type, props)
+    local obj = Drawing.new(type)
+    for k,v in pairs(props) do
+        obj[k] = v
+    end
+    return obj
+end
+
+local function createPlayerComponents()
+    return {
+        Box = createDrawing("Square", {
+            Thickness = 1,
+            Transparency = 1,
+            Color = Color3.fromRGB(0,255,0),
+            Filled = false,
+            Visible = false
+        }),
+        Name = createDrawing("Text", {
+            Size = 18,
+            Center = true,
+            Outline = true,
+            Color = Color3.fromRGB(255,255,255),
+            OutlineColor = Color3.fromRGB(0,0,0),
+            Visible = false
+        }),
+        Distance = createDrawing("Text", {
+            Size = 16,
+            Center = true,
+            Outline = true,
+            Color = Color3.fromRGB(255,255,255),
+            OutlineColor = Color3.fromRGB(0,0,0),
+            Visible = false
+        }),
+        HealthOutline = createDrawing("Square", {
+            Thickness = 1,
+            Transparency = 1,
+            Color = Color3.fromRGB(0,0,0),
+            Filled = false,
+            Visible = false
+        }),
+        HealthBar = createDrawing("Square", {
+            Thickness = 1,
+            Transparency = 1,
+            Color = Color3.fromRGB(0,255,0),
+            Filled = true,
+            Visible = false
+        })
+    }
+end
+
+local function removePlayerComponents(comp)
+    for _, v in pairs(comp) do
+        v:Remove()
+    end
+end
+
+local function hidePlayerComponents(comp)
+    for _, v in pairs(comp) do
+        v.Visible = false
+    end
+end
+
+local function updatePlayerESP(player, comp)
+    if player == LocalPlayer then
+        hidePlayerComponents(comp)
+        return
+    end
+
+    local character = player.Character
+    if not character then
+        hidePlayerComponents(comp)
+        return
+    end
+
+    local hrp = character:FindFirstChild("HumanoidRootPart")
+    local humanoid = character:FindFirstChild("Humanoid")
+
+    if not hrp or not humanoid then
+        hidePlayerComponents(comp)
+        return
+    end
+
+    local pos, onScreen = Camera:WorldToViewportPoint(hrp.Position)
+    if not onScreen then
+        hidePlayerComponents(comp)
+        return
+    end
+
+    local screenSize = Camera.ViewportSize
+    local factor = 1 / (pos.Z * math.tan(math.rad(Camera.FieldOfView * 0.5)) * 2) * 100
+    local width = math.floor(screenSize.Y / 25 * factor)
+    local height = math.floor(screenSize.X / 27 * factor)
+
+    local localHRP = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+    local distance = localHRP and math.floor((localHRP.Position - hrp.Position).Magnitude) or 0
+
+
+    comp.Box.Size = Vector2.new(width, height)
+    comp.Box.Position = Vector2.new(pos.X - width/2, pos.Y - height/2)
+    comp.Box.Visible = true
+
+
+    comp.Name.Text = player.Name
+    comp.Name.Position = Vector2.new(pos.X, pos.Y - height/2 - 15)
+    comp.Name.Visible = true
+
+
+    comp.Distance.Text = "["..distance.."m]"
+    comp.Distance.Position = Vector2.new(pos.X, pos.Y + height/2 + 5)
+    comp.Distance.Visible = true
+
+
+    local healthFraction = humanoid.Health / humanoid.MaxHealth
+    local barWidth = 4
+    local barHeight = height
+
+    comp.HealthOutline.Size = Vector2.new(barWidth, barHeight)
+    comp.HealthOutline.Position = Vector2.new(comp.Box.Position.X - barWidth - 2, comp.Box.Position.Y)
+    comp.HealthOutline.Visible = true
+
+    comp.HealthBar.Size = Vector2.new(barWidth - 1, barHeight * healthFraction)
+    comp.HealthBar.Position = Vector2.new(
+        comp.HealthOutline.Position.X + 0.5,
+        comp.HealthOutline.Position.Y + barHeight * (1 - healthFraction)
+    )
+    comp.HealthBar.Visible = true
+end
+
+local function enablePlayerESP()
+    if playerRenderConnection then return end
+
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer then
+            playerCache[player] = createPlayerComponents()
+        end
+    end
+
+    Players.PlayerAdded:Connect(function(player)
+        if playerESPEnabled and player ~= LocalPlayer then
+            playerCache[player] = createPlayerComponents()
+        end
+    end)
+
+    Players.PlayerRemoving:Connect(function(player)
+        if playerCache[player] then
+            removePlayerComponents(playerCache[player])
+            playerCache[player] = nil
+        end
+    end)
+
+    playerRenderConnection = RunService.RenderStepped:Connect(function()
+        for player, comp in pairs(playerCache) do
+            if player and player.Parent then
+                updatePlayerESP(player, comp)
+            else
+                removePlayerComponents(comp)
+                playerCache[player] = nil
+            end
+        end
+    end)
+end
+
+local function disablePlayerESP()
+    if playerRenderConnection then
+        playerRenderConnection:Disconnect()
+        playerRenderConnection = nil
+    end
+
+    for _, comp in pairs(playerCache) do
+        removePlayerComponents(comp)
+    end
+
+    playerCache = {}
+end
+
+function togglePlayerESP(state)
+    playerESPEnabled = state
+
+    if state then
+        enablePlayerESP()
+    else
+        disablePlayerESP()
+    end
+end
+
+local function teleportToPosition(position)
+    local character = LocalPlayer.Character
+    if not character then return end
+
+    local hrp = character:FindFirstChild("HumanoidRootPart")
+    if not hrp then return end
+
+    hrp.CFrame = CFrame.new(position)
+end
+
+local function createValveHighlight(obj)
+    if valveHighlights[obj] then return end
+    if not obj:IsA("BasePart") then return end
+
+    local highlight = Instance.new("Highlight")
+    highlight.Adornee = obj
+    highlight.FillColor = Color3.fromRGB(255,170,0)
+    highlight.OutlineColor = Color3.fromRGB(255,170,0)
+    highlight.FillTransparency = 0.4
+    highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+
+    highlight.Parent = workspace 
+
+    valveHighlights[obj] = highlight
+end
+
+
+local function removeAllValveHighlights()
+    for obj, highlight in pairs(valveHighlights) do
+        if highlight then
+            highlight:Destroy()
+        end
+    end
+    valveHighlights = {}
+end
+
+local function toggleValveESP(state)
+    valveESPEnabled = state
+
+    if state then
+
+        for _, obj in ipairs(ValveFolder:GetDescendants()) do
+            if obj:IsA("BasePart") then
+                createValveHighlight(obj)
+            end
+        end
+
+        valveConnection = ValveFolder.DescendantAdded:Connect(function(child)
+            if valveESPEnabled and child:IsA("MeshPart") then
+                createValveHighlight(child)
+            end
+        end)
+
+    else
+        if valveConnection then
+            valveConnection:Disconnect()
+            valveConnection = nil
+        end
+
+        removeAllValveHighlights()
+    end
+end
+
+
+
+-- GUI BEGINS HERE ----------------------------------------------------------------------------------------------------
+
 local Window = WindUI:CreateWindow({
     Title = "TeeHub - Apeirophobia",
     Icon = "activity",
@@ -261,14 +535,14 @@ local Window = WindUI:CreateWindow({
 })
 
 Window:Tag({
-    Title = "v0.0.2a",
+    Title = "v0.0.3b",
     Icon = "github",
     Color = Color3.fromHex("#30ff6a"),
     Radius = 10, -- from 0 to 13
 })
 
 local Tab = Window:Tab({ Title = "Main", Icon = "user", Locked = false })
-local Tab2 = Window:Tab({ Title = "Teleports", Icon = "cloud", Locked = false })
+local Tab2 = Window:Tab({ Title = "Level related stuff", Icon = "cloud", Locked = false })
 local Tab3 = Window:Tab({ Title = "Misc", Icon = "droplet", Locked = false })
 
 local Toggle = Tab:Toggle({
@@ -314,14 +588,15 @@ local ToggleESP = Tab:Toggle({
     end
 })
 
+local TogglePlayerESP = Tab:Toggle({
+    Title = "Player 2D ESP",
+    Value = false,
+    Callback = function(state)
+        togglePlayerESP(state)
+    end
+})
 
-
-
-
-
-
-
-
+-- TAB 3 ( MISC )---------------------------------------------------------------------------------------------
 
 local Keybind = Tab3:Keybind({
     Title = "Close Window",
@@ -329,5 +604,23 @@ local Keybind = Tab3:Keybind({
     Value = "RightAlt",
     Callback = function(v)
         Window:SetToggleKey(Enum.KeyCode[v])
+    end
+})
+
+-- TAB 2 ( OTHER STUFF )--------------------------------------------------------------------------------------------
+
+local lvl0tp = Tab2:Button({
+    Title = "End Level 0",
+    Callback = function()
+        teleportToPosition(Vector3.new(-902.194458, 1.77956414, -92.6192093))
+    end
+})
+
+local ToggleValveESP = Tab2:Toggle({
+    Title = "Valve Highlight",
+    Value = false,
+    Locked = true,
+    Callback = function(state)
+        toggleValveESP(state)
     end
 })
