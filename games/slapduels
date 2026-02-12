@@ -78,9 +78,10 @@ local Window = WindUI:CreateWindow({
      }
 })
 
+local Tab4 = Window:Tab({ Title = "Main", Icon = "box", Locked = false })
 local Tab = Window:Tab({ Title = "Player", Icon = "user", Locked = false })
 local Tab2 = Window:Tab({ Title = "Teleports", Icon = "cloud", Locked = false })
-local Tab3 = Window:Tab({ Title = "Misc", Icon = "droplet", Locked = false })
+local Tab3 = Window:Tab({ Title = "Misc", Icon = "cpu", Locked = false })
 
 
 Tab:Toggle({
@@ -163,4 +164,21 @@ local Keybind = Tab3:Keybind({
     Callback = function(v)
         Window:SetToggleKey(Enum.KeyCode[v])
     end
+})
+
+local Paragraph = Tab2:Paragraph({
+    Title = "Work In Progress",
+    Image = "",
+    ImageSize = 30,
+    Thumbnail = "",
+    ThumbnailSize = 80,
+    Locked = true,
+})
+
+Tab:Toggle({
+	Title = "Auto Win",
+	Icon = "x",
+	Type = "Checkbox",
+	Value = false,
+
 })
