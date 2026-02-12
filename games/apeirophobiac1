@@ -1,5 +1,243 @@
 local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
 
+local LocalCharacter = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+local LocalHRP = LocalCharacter:WaitForChild("HumanoidRootPart")
+local Camera = workspace.CurrentCamera
+local LocalPlayer = Players.LocalPlayer
+
+local Players = game:GetService("Players")
+local Entities = workspace:WaitForChild("Entities")
+local RunService = game:GetService("RunService")
+local Lighting = game:GetService("Lighting")
+
+
+local highlightsEnabled = false
+local highlights = {}
+local highlightColor = Color3.fromRGB(255, 0, 0)
+local brightLoop = nil
+local brightEnabled = false
+local entityESPEnabled = false
+local entityCache = {}
+local renderConnection
+local childConnection
+local connection
+
+
+local function createHighlight(entity)
+    if not highlightsEnabled then return end
+    if entity:IsA("Model") and not entity:FindFirstChild("EntityHighlight") then
+        
+        local highlight = Instance.new("Highlight")
+        highlight.Name = "EntityHighlight"
+        highlight.Adornee = entity
+        highlight.FillColor = highlightColor
+        highlight.OutlineColor = highlightColor
+        highlight.FillTransparency = 0.5
+        highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+        highlight.Parent = entity
+
+        table.insert(highlights, highlight)
+    end
+end
+
+local function removeAllHighlights()
+    for _, highlight in ipairs(highlights) do
+        if highlight and highlight.Parent then
+            highlight:Destroy()
+        end
+    end
+    highlights = {}
+end
+
+local function toggleHighlight(state)
+    highlightsEnabled = state
+
+    if state then
+        for _, entity in ipairs(Entities:GetChildren()) do
+            createHighlight(entity)
+        end
+
+        connection = Entities.ChildAdded:Connect(function(child)
+            createHighlight(child)
+        end)
+
+    else
+        if connection then
+            connection:Disconnect()
+            connection = nil
+        end
+
+        removeAllHighlights()
+    end
+end
+
+local function createDrawing(type, props)
+    local obj = Drawing.new(type)
+    for k,v in pairs(props) do
+        obj[k] = v
+    end
+    return obj
+end
+
+local function createComponents()
+    return {
+        Box = createDrawing("Square", {
+            Thickness = 1,
+            Transparency = 1,
+            Color = Color3.fromRGB(255,0,0),
+            Filled = false,
+            Visible = false
+        }),
+        Name = createDrawing("Text", {
+            Size = 18,
+            Center = true,
+            Outline = true,
+            Color = Color3.fromRGB(255,255,255),
+            OutlineColor = Color3.fromRGB(0,0,0),
+            Visible = false
+        }),
+        Distance = createDrawing("Text", {
+            Size = 16,
+            Center = true,
+            Outline = true,
+            Color = Color3.fromRGB(255,255,255),
+            OutlineColor = Color3.fromRGB(0,0,0),
+            Visible = false
+        })
+    }
+end
+
+local function removeComponents(comp)
+    comp.Box:Remove()
+    comp.Name:Remove()
+    comp.Distance:Remove()
+end
+
+local function hideComponents(comp)
+    comp.Box.Visible = false
+    comp.Name.Visible = false
+    comp.Distance.Visible = false
+end
+
+local function updateESP(entity, comp)
+    local hrp = entity:FindFirstChild("HumanoidRootPart")
+        or entity:FindFirstChild("HRP")
+
+    if not hrp then
+        hideComponents(comp)
+        return
+    end
+
+    local pos, onScreen = Camera:WorldToViewportPoint(hrp.Position)
+    if not onScreen then
+        hideComponents(comp)
+        return
+    end
+
+    local screenSize = Camera.ViewportSize
+    local factor = 1 / (pos.Z * math.tan(math.rad(Camera.FieldOfView * 0.5)) * 2) * 100
+    local width = math.floor(screenSize.Y / 25 * factor)
+    local height = math.floor(screenSize.X / 27 * factor)
+
+    local distance = math.floor((LocalHRP.Position - hrp.Position).Magnitude)
+
+    comp.Box.Size = Vector2.new(width, height)
+    comp.Box.Position = Vector2.new(pos.X - width/2, pos.Y - height/2)
+    comp.Box.Visible = true
+
+    comp.Name.Text = entity.Name
+    comp.Name.Position = Vector2.new(pos.X, pos.Y - height/2 - 15)
+    comp.Name.Visible = true
+
+    comp.Distance.Text = "["..distance.."m]"
+    comp.Distance.Position = Vector2.new(pos.X, pos.Y + height/2 + 5)
+    comp.Distance.Visible = true
+end
+
+local function enableEntityESP()
+    if renderConnection then return end
+
+    for _, entity in ipairs(Entities:GetChildren()) do
+        if entity:IsA("Model") then
+            entityCache[entity] = createComponents()
+        end
+    end
+
+    childConnection = Entities.ChildAdded:Connect(function(child)
+        if entityESPEnabled and child:IsA("Model") then
+            entityCache[child] = createComponents()
+        end
+    end)
+
+    Entities.ChildRemoved:Connect(function(child)
+        if entityCache[child] then
+            removeComponents(entityCache[child])
+            entityCache[child] = nil
+        end
+    end)
+
+    renderConnection = RunService.RenderStepped:Connect(function()
+        for entity, comp in pairs(entityCache) do
+            if entity and entity.Parent then
+                updateESP(entity, comp)
+            else
+                removeComponents(comp)
+                entityCache[entity] = nil
+            end
+        end
+    end)
+end
+
+local function disableEntityESP()
+    if renderConnection then
+        renderConnection:Disconnect()
+        renderConnection = nil
+    end
+
+    if childConnection then
+        childConnection:Disconnect()
+        childConnection = nil
+    end
+
+    for _, comp in pairs(entityCache) do
+        removeComponents(comp)
+    end
+
+    entityCache = {}
+end
+
+function toggleEntityESP(state)
+    entityESPEnabled = state
+
+    if state then
+        enableEntityESP()
+    else
+        disableEntityESP()
+    end
+end
+
+
+local function toggleFullBright(state)
+    brightEnabled = state
+
+    if brightEnabled then
+        if brightLoop then brightLoop:Disconnect() end
+
+        brightLoop = RunService.RenderStepped:Connect(function()
+            Lighting.Brightness = 2
+            Lighting.ClockTime = 14
+            Lighting.FogEnd = 100000
+            Lighting.GlobalShadows = false
+            Lighting.OutdoorAmbient = Color3.fromRGB(128, 128, 128)
+        end)
+    else
+        if brightLoop then
+            brightLoop:Disconnect()
+            brightLoop = nil
+        end
+    end
+end
+
 local Window = WindUI:CreateWindow({
     Title = "TeeHub - Apeirophobia",
     Icon = "activity",
@@ -23,7 +261,7 @@ local Window = WindUI:CreateWindow({
 })
 
 Window:Tag({
-    Title = "v0.0.1a",
+    Title = "v0.0.2a",
     Icon = "github",
     Color = Color3.fromHex("#30ff6a"),
     Radius = 10, -- from 0 to 13
@@ -33,11 +271,48 @@ local Tab = Window:Tab({ Title = "Main", Icon = "user", Locked = false })
 local Tab2 = Window:Tab({ Title = "Teleports", Icon = "cloud", Locked = false })
 local Tab3 = Window:Tab({ Title = "Misc", Icon = "droplet", Locked = false })
 
+local Toggle = Tab:Toggle({
+    Title = "Highlight entities",
+    Value = false,
+    Callback = function(state) 
+        toggleHighlight(state)
+    end
+})
 
+local Colorpicker = Tab:Colorpicker({
+    Title = "Highlight Color",
+    Desc = "Change ESP color",
+    Default = highlightColor,
+    Transparency = 0,
+    Locked = false,
 
+    Callback = function(color)
+        highlightColor = color
+        
+        for _, highlight in ipairs(highlights) do
+            if highlight then
+                highlight.FillColor = color
+                highlight.OutlineColor = color
+            end
+        end
+    end
+})
 
+local ToggleFB = Tab:Toggle({
+    Title = "Fullbright",
+    Value = false,
+    Callback = function(state)
+        toggleFullBright(state)
+    end
+})
 
-
+local ToggleESP = Tab:Toggle({
+    Title = "Entity 2D ESP",
+    Value = false,
+    Callback = function(state)
+        toggleEntityESP(state)
+    end
+})
 
 
 
