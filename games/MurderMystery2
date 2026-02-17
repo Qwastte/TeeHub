@@ -1,0 +1,42 @@
+local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
+
+
+
+local Window = WindUI:CreateWindow({
+	Title = "TeeHub - Murder Mystery 2",
+	Icon = "activity",
+	Folder = "teehub",
+	Size = UDim2.fromOffset(580, 460),
+	MinSize = Vector2.new(560, 350),
+	MaxSize = Vector2.new(850, 560),
+	Transparent = true,
+	Theme = "Dark",
+	Resizable = true,
+	SideBarWidth = 200,
+	BackgroundImageTransparency = 0.42,
+	HideSearchBar = true,
+	ScrollBarEnabled = false,
+    User = {
+        Enabled = true,
+         Callback = function()
+            WindUI:Notify({
+                Title = "Your Profile",
+                Content = "literally you lol",
+                Duration = 3,
+            })
+        end
+     }
+})
+
+Window:Tag({
+    Title = "v0.0.1",
+    Icon = "github",
+    Color = Color3.fromHex("#30ff6a"),
+    Radius = 10, -- from 0 to 13
+})
+
+local Tab = Window:Tab({ Title = "Main", Icon = "box", Locked = false })
+local Tab1 = Window:Tab({ Title = "Player", Icon = "user", Locked = false })
+local Tab2 = Window:Tab({ Title = "Teleports", Icon = "cloud", Locked = false })
+local Tab3 = Window:Tab({ Title = "Misc", Icon = "cpu", Locked = false })
+
