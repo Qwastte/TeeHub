@@ -1,4 +1,4 @@
-local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
+local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/download/1.6.63/main.lua"))()
 
 local games = {
     [{108143110454419}] = "https://raw.githubusercontent.com/Qwastte/TeeHub/refs/heads/main/games/JumpIntoPocoyo",
@@ -6,7 +6,7 @@ local games = {
     [{10277607801}] = "https://raw.githubusercontent.com/Qwastte/TeeHub/refs/heads/main/games/apeirolobby",
     [{3761186887}] = "https://raw.githubusercontent.com/Qwastte/TeeHub/refs/heads/main/games/apeirophobiac1",
     [{14839391229}] = "https://raw.githubusercontent.com/Qwastte/TeeHub/refs/heads/main/games/apeirophobiac2",
-    [{142823291}, {335132309}, {80469437126309}, {636649648}] = "https://raw.githubusercontent.com/Qwastte/TeeHub/refs/heads/main/games/MurderMystery2",
+    [{142823291}] = "https://raw.githubusercontent.com/Qwastte/TeeHub/refs/heads/main/games/MurderMystery2",
     [{113402871616247}] = "https://raw.githubusercontent.com/Qwastte/TeeHub/refs/heads/main/games/jtmkpdh",
 }
 
