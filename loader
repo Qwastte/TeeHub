@@ -7,6 +7,7 @@ local games = {
     [{3761186887}] = "https://raw.githubusercontent.com/Qwastte/TeeHub/refs/heads/main/games/apeirophobiac1",
     [{14839391229}] = "https://raw.githubusercontent.com/Qwastte/TeeHub/refs/heads/main/games/apeirophobiac2",
     [{142823291}, {335132309}, {80469437126309}, {636649648}] = "https://raw.githubusercontent.com/Qwastte/TeeHub/refs/heads/main/games/MurderMystery2",
+    [{113402871616247}] = "https://raw.githubusercontent.com/Qwastte/TeeHub/refs/heads/main/games/jtmkpdh",
 }
 
 for ids, url in next, games do
