@@ -25,7 +25,7 @@ local function startTeleport()
 end
 
 local Window = WindUI:CreateWindow({
-    Title = "TeeHub",
+    Title = "TeeHub - Jump To Meet KPop Demon Hunters",
     Icon = "candy-cane", -- lucide icon
     Folder = "teehub",
     
