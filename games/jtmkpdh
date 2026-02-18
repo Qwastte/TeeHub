@@ -1,0 +1,83 @@
+local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
+
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+local teleportEnabled = false
+local delayTime = 0.1
+local teleportThread = nil
+
+local function startTeleport()
+    if teleportThread then return end
+    
+    teleportThread = task.spawn(function()
+        while teleportEnabled do
+            local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+            local root = character:WaitForChild("HumanoidRootPart")
+            
+            root.CFrame = CFrame.new(-20, 1984.19995, 1715)
+            game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("Events"):WaitForChild("ClaimWinSequenceReward"):FireServer()
+
+            task.wait(delayTime)
+        end
+        teleportThread = nil
+    end)
+end
+
+local Window = WindUI:CreateWindow({
+    Title = "TeeHub",
+    Icon = "candy-cane", -- lucide icon
+    Folder = "teehub",
+    
+    -- ↓ This all is Optional. You can remove it.
+    Size = UDim2.fromOffset(580, 460),
+    MinSize = Vector2.new(560, 350),
+    MaxSize = Vector2.new(850, 560),
+    Transparent = true,
+    Theme = "Dark",
+    Resizable = true,
+    SideBarWidth = 200,
+    BackgroundImageTransparency = 0.42,
+    HideSearchBar = true,
+    ScrollBarEnabled = false,
+
+    User = {
+        Enabled = true,
+        Anonymous = true,
+    },
+})
+
+    Window:Tag({
+    Title = "v0.0.1b",
+    Icon = "github",
+    Color = Color3.fromHex("#30ff6a"),
+    Radius = 10, -- from 0 to 13
+    })
+
+local Tab = Window:Tab({ Title = "Main", Icon = "user", Locked = false })
+
+local Toggle = Tab:Toggle({
+    Title = "Autowin",
+    Type = "Checkbox",
+    Value = false,
+    Callback = function(state)
+        teleportEnabled = state
+        
+        if state then
+            startTeleport()
+        end
+    end
+})
+
+local Slider = Tab:Slider({
+    Title = "Teleport Delay",
+    Step = 0.01,
+    Value = {
+        Min = 0.01,
+        Max = 1,
+        Default = 0.1,
+    },
+    Callback = function(value)
+        delayTime = value
+    end
+})
