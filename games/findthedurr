@@ -1,0 +1,122 @@
+local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
+local Players = game.Players
+
+local TeleportSystem = {}
+TeleportSystem.__index = TeleportSystem
+
+function TeleportSystem.new(folderPath)
+    local self = setmetatable({}, TeleportSystem)
+    self.folder = folderPath
+    self.objects = folderPath:GetChildren()
+    self.currentIndex = 1
+    return self
+end
+
+function TeleportSystem:_getPosition(target)
+    if target:IsA("BasePart") then
+        return target.Position
+    elseif target:IsA("Model") then
+        if target.PrimaryPart then
+            return target.PrimaryPart.Position
+        end
+        for _, part in ipairs(target:GetDescendants()) do
+            if part:IsA("BasePart") then
+                return part.Position
+            end
+        end
+    end
+    return nil
+end
+
+function TeleportSystem:Next()
+    local player = Players.LocalPlayer
+    local character = player.Character
+    if not character then return false, "Персонаж не найден" end
+
+    local hrp = character:FindFirstChild("HumanoidRootPart")
+    if not hrp then return false, "HumanoidRootPart не найден" end
+
+    self.currentIndex = self.currentIndex % #self.objects + 1
+    local target = self.objects[self.currentIndex]
+    if not target then return false, "Объект не найден" end
+
+    local position = self:_getPosition(target)
+    if not position then return false, "Позиция не найдена" end
+
+    hrp.CFrame = CFrame.new(position + Vector3.new(0, 5, 0))
+    return true, target.Name
+end
+
+local teleport = TeleportSystem.new(workspace:WaitForChild("ToFind"))
+local isRunning = false
+local teleportDelay = 1
+local teleportThread = nil
+
+local function startTeleporting()
+    teleportThread = task.spawn(function()
+        while isRunning do
+            teleport:Next()
+            task.wait(teleportDelay)
+        end
+    end)
+end
+
+local function stopTeleporting()
+    isRunning = false
+    if teleportThread then
+        task.cancel(teleportThread)
+        teleportThread = nil
+    end
+end
+
+local Window = WindUI:CreateWindow({
+    Title = "TeeHub - Find the Durr",
+    Icon = "candy-cane",
+    Folder = "teehub",
+    Size = UDim2.fromOffset(580, 460),
+    MinSize = Vector2.new(560, 350),
+    MaxSize = Vector2.new(850, 560),
+    Transparent = true,
+    Theme = "Dark",
+    Resizable = true,
+    SideBarWidth = 200,
+    BackgroundImageTransparency = 0.42,
+    HideSearchBar = true,
+    ScrollBarEnabled = false,
+    User = {
+        Enabled = true,
+        Anonymous = false,
+    },
+})
+
+local Tab = Window:Tab({
+    Title = "Main",
+    Icon = "zap",
+})
+
+local Toggle = Tab:Toggle({
+    Title = "Get all Durrs",
+    Type = "Checkbox",
+    Value = false,
+    Callback = function(state)
+        if state then
+            isRunning = true
+            startTeleporting()
+        else
+            stopTeleporting()
+        end
+    end
+})
+
+local Slider = Tab:Slider({
+    Title = "Teleport cooldown (ms)",
+    Step = 10,
+    Value = {
+        Min = 100,
+        Max = 5000,
+        Default = 1000,
+    },
+    Callback = function(value)
+        teleportDelay = value / 1000
+    end
+})
