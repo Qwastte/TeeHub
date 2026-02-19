@@ -12,3 +12,4 @@ Games supported now:
 + [**Slap Duels**](https://www.roblox.com/games/139766023909499/) (WIP)
 + [**Apeirophobia**](https://www.roblox.com/games/10277607801/Apeirophobia) (WIP)
 + [**Murder Mystery 2**](https://www.roblox.com/games/142823291/Murder-Mystery-2) (WIP)
++ Universal
