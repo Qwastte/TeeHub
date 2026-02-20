@@ -6,7 +6,45 @@ local VirtualUser = game:GetService("VirtualUser")
 local HttpService = game:GetService("HttpService")
 local player = Players.LocalPlayer
 
-local WEBHOOK_URL = "https://discord.com/api/webhooks/YOUR_WEBHOOK_HERE"
+local CONFIG_PATH = "teehub/config.json"
+
+local config = {
+    webhookUrl   = "https://discord.com/api/webhooks/YOUR_WEBHOOK_HERE",
+    closeKeybind = "RightAlt",
+}
+
+local function ensureFolder()
+    if not isfolder("teehub") then
+        makefolder("teehub")
+    end
+end
+
+local function saveConfig()
+    ensureFolder()
+    local ok, err = pcall(function()
+        writefile(CONFIG_PATH, HttpService:JSONEncode(config))
+    end)
+    if not ok then warn("[TeeHub] Failed to save config: " .. tostring(err)) end
+end
+
+local function loadConfig()
+    ensureFolder()
+    if isfile(CONFIG_PATH) then
+        local ok, result = pcall(function()
+            return HttpService:JSONDecode(readfile(CONFIG_PATH))
+        end)
+        if ok and result then
+            config.webhookUrl   = result.webhookUrl   or config.webhookUrl
+            config.closeKeybind = result.closeKeybind or config.closeKeybind
+        end
+    else
+        saveConfig()
+    end
+end
+
+loadConfig()
+
+local WEBHOOK_URL = config.webhookUrl
 
 local boothState = {
     items = {},
@@ -35,13 +73,14 @@ local function fmt(n)
 end
 
 local function sendEmbed(embedData)
-    if WEBHOOK_URL == "https://discord.com/api/webhooks/YOUR_WEBHOOK_HERE" then
+    local url = config.webhookUrl
+    if url == "" or url == "https://discord.com/api/webhooks/YOUR_WEBHOOK_HERE" then
         warn("[TeeHub] Webhook URL not set!")
         return
     end
     local payload = HttpService:JSONEncode({ embeds = { embedData } })
     http_request({
-        Url = WEBHOOK_URL,
+        Url = url,
         Method = "POST",
         Headers = { ["Content-Type"] = "application/json" },
         Body = payload,
@@ -206,7 +245,7 @@ local Window = WindUI:CreateWindow({
     Icon = "activity",
     Author = "Trading Lobby",
     Folder = "teehub",
-    Size = UDim2.fromOffset(580, 460),
+    Size = UDim2.fromOffset(680, 460),
     MinSize = Vector2.new(560, 350),
     MaxSize = Vector2.new(850, 560),
     Transparent = true,
@@ -233,9 +272,12 @@ local WebhookTab = Window:Tab({ Title = "Webhook", Icon = "rss", Locked = false 
 
 WebhookTab:Input({
     Title = "Discord Webhook URL",
-    Default = WEBHOOK_URL,
+    Desc = "Url is saved automatically",
+    Default = config.webhookUrl,
     Callback = function(val)
-        WEBHOOK_URL = val
+        if val == "" then return end
+        config.webhookUrl = val
+        saveConfig()
         WindUI:Notify({ Title = "Webhook", Content = "URL saved!", Duration = 2 })
     end,
 })
@@ -362,8 +404,12 @@ Misc:Divider()
 Misc:Keybind({
     Title = "Close Window",
     Desc = "Keybind to close & open menu",
-    Value = "RightAlt",
+    Value = config.closeKeybind,
     Callback = function(v)
+        config.closeKeybind = v
+        saveConfig()
         Window:SetToggleKey(Enum.KeyCode[v])
     end,
 })
+
+Window:SetToggleKey(Enum.KeyCode[config.closeKeybind])
