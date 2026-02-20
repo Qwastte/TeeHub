@@ -1,5 +1,4 @@
 local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/download/1.6.63/main.lua"))()
-
 local games = {
     [{108143110454419}] = "https://raw.githubusercontent.com/Qwastte/TeeHub/refs/heads/main/games/JumpIntoPocoyo",
     [{139766023909499}] = "https://raw.githubusercontent.com/Qwastte/TeeHub/refs/heads/main/games/slapduels",
@@ -11,13 +10,37 @@ local games = {
     [{103579327715933}] = "https://raw.githubusercontent.com/Qwastte/TeeHub/refs/heads/main/games/findthedurr",
     [{119260352090770}] = "https://raw.githubusercontent.com/Qwastte/TeeHub/refs/heads/main/games/DeathBallTL",
 }
-
 WindUI:SetNotificationLower(true)
 
+local found = false
 for ids, url in next, games do
     if table.find(ids, game.PlaceId) then
-    WindUI:Notify({ Title = "TeeHub", Content = "Game supported, loading script..", Duration = 3, Icon = "activity" })
+        found = true
+        WindUI:Notify({ Title = "TeeHub", Content = "Game supported, loading script..", Duration = 1, Icon = "activity" })
         loadstring(game:HttpGet(url))()
         break
     end
+end
+
+if not found then
+    WindUI:Popup({
+        Title = "Game Not Supported",
+        Icon = "info",
+        Content = "This game is not supported by TeeHub. You can still try the universal script.",
+        Buttons = {
+            {
+                Title = "Cancel",
+                Callback = function() end,
+                Variant = "Tertiary",
+            },
+            {
+                Title = "Continue",
+                Icon = "arrow-right",
+                Callback = function()
+                    loadstring(game:HttpGet("https://raw.githubusercontent.com/Qwastte/TeeHub/refs/heads/main/games/Universal"))()
+                end,
+                Variant = "Primary",
+            }
+        }
+    })
 end
