@@ -1,0 +1,369 @@
+local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local VirtualUser = game:GetService("VirtualUser")
+local HttpService = game:GetService("HttpService")
+local player = Players.LocalPlayer
+
+local WEBHOOK_URL = "https://discord.com/api/webhooks/YOUR_WEBHOOK_HERE"
+
+local boothState = {
+    items = {},
+    soldLog = {},
+    enabled = false,
+    checkInterval = 30,
+    lastSnapshot = {},
+}
+
+local function getRarityColor(price)
+    if price >= 100000000 then
+        return 0xFF6600, "Legendary", "🟠"
+    elseif price >= 10000000 then
+        return 0xAA00FF, "Epic", "🟣"
+    elseif price >= 1000000 then
+        return 0x0099FF, "Rare", "🔵"
+    elseif price >= 100000 then
+        return 0x00CC44, "Uncommon", "🟢"
+    else
+        return 0xAAAAAA, "Common", "⚪"
+    end
+end
+
+local function fmt(n)
+    return tostring(n):reverse():gsub("%d%d%d", "%1,"):reverse():gsub("^,", "")
+end
+
+local function sendEmbed(embedData)
+    if WEBHOOK_URL == "https://discord.com/api/webhooks/YOUR_WEBHOOK_HERE" then
+        warn("[TeeHub] Webhook URL not set!")
+        return
+    end
+    local payload = HttpService:JSONEncode({ embeds = { embedData } })
+    http_request({
+        Url = WEBHOOK_URL,
+        Method = "POST",
+        Headers = { ["Content-Type"] = "application/json" },
+        Body = payload,
+    })
+end
+
+local function sendWebhook(title, description, color, fields)
+    local embedFields = {}
+    if fields then
+        for _, f in ipairs(fields) do
+            table.insert(embedFields, {
+                name = f.name,
+                value = f.value,
+                inline = f.inline or false,
+            })
+        end
+    end
+    sendEmbed({
+        title = title,
+        description = description,
+        color = color or 7506394,
+        fields = embedFields,
+        footer = { text = "TeeHub Booth Tracker • " .. player.Name },
+        timestamp = os.date("!%Y-%m-%dT%H:%M:%SZ"),
+    })
+end
+
+local function scanBoothItems()
+    local found = {}
+    local ok, scrollFrame = pcall(function()
+        return player.PlayerGui.PAGES.LocalPlayerBooth.ScrollingFrame
+    end)
+    if not ok or not scrollFrame then return found end
+
+    for _, card in ipairs(scrollFrame:GetChildren()) do
+        if card.Name == "CardPrefab" then
+            local priceLabel = card:FindFirstChild("OnSaleFrame") and
+                               card.OnSaleFrame:FindFirstChild("TextLabel")
+            local itemName = "Unknown Item"
+            for _, child in ipairs(card:GetChildren()) do
+                local nameLabel = child:FindFirstChild("ItemName")
+                if nameLabel and nameLabel:IsA("TextLabel") then
+                    itemName = nameLabel.Text
+                end
+            end
+            if priceLabel then
+                local txt = priceLabel.Text:gsub(",", ""):gsub("%s", ""):gsub("%.", "")
+                local price = tonumber(txt) or 0
+                if price > 0 then
+                    local key = itemName .. "_" .. tostring(price)
+                    found[key] = found[key] or { name = itemName, price = price, qty = 0 }
+                    found[key].qty = found[key].qty + 1
+                end
+            end
+        end
+    end
+    return found
+end
+
+local function compareSnapshots(old, new)
+    local sold = {}
+    for key, oldData in pairs(old) do
+        local newData = new[key]
+        local newQty = newData and newData.qty or 0
+        local diff = oldData.qty - newQty
+        if diff > 0 then
+            table.insert(sold, {
+                name = oldData.name,
+                price = oldData.price,
+                qty = diff,
+                time = os.date("%H:%M:%S"),
+            })
+        end
+    end
+    return sold
+end
+
+local function notifySold(soldItems, remaining)
+    task.spawn(function()
+        for _, item in ipairs(soldItems) do
+            local earned = item.price * item.qty
+            local color, rarity, icon = getRarityColor(item.price)
+            sendEmbed({
+                title = "💰 Sold: " .. item.name,
+                description = string.format(
+                    "**Rarity:** %s %s\n**Player:** %s\n**Qty:** %d\n**Price each:** 💜 %s\n**Earned:** 💜 **%s**\n**Time:** `%s`",
+                    icon, rarity, player.Name, item.qty, fmt(item.price), fmt(earned), item.time
+                ),
+                color = color,
+                footer = { text = "TeeHub Booth Tracker" },
+                timestamp = os.date("!%Y-%m-%dT%H:%M:%SZ"),
+            })
+            task.wait(0.5)
+        end
+        local remText = ""
+        for _, data in pairs(remaining) do
+            local _, rarity, icon = getRarityColor(data.price)
+            remText = remText .. string.format("• %s **%s** — %d × 💜 %s\n",
+                icon, data.name, data.qty, fmt(data.price))
+        end
+        if remText == "" then remText = "*Booth is empty*" end
+        sendEmbed({
+            title = "📦 Booth remaining — " .. player.Name,
+            description = remText,
+            color = 3447003,
+            footer = { text = "TeeHub Booth Tracker" },
+            timestamp = os.date("!%Y-%m-%dT%H:%M:%SZ"),
+        })
+    end)
+end
+
+local boothConn
+local function startBoothTracking()
+    if boothConn then return end
+    task.spawn(function()
+        task.wait(2)
+        boothState.lastSnapshot = scanBoothItems()
+        local initText = ""
+        for _, data in pairs(boothState.lastSnapshot) do
+            local _, rarity, icon = getRarityColor(data.price)
+            initText = initText .. string.format("• %s **%s** — %d × 💜 %s\n",
+                icon, data.name, data.qty, fmt(data.price))
+        end
+        if initText == "" then initText = "*Nothing found. Make sure booth is set up.*" end
+        sendWebhook("📋 Tracking started — " .. player.Name,
+            "Booth sale tracking started.\n\n**Current items:**\n" .. initText, 3447003, nil)
+        local elapsed = 0
+        boothConn = RunService.Heartbeat:Connect(function(dt)
+            elapsed = elapsed + dt
+            if elapsed >= boothState.checkInterval then
+                elapsed = 0
+                local current = scanBoothItems()
+                local soldItems = compareSnapshots(boothState.lastSnapshot, current)
+                if #soldItems > 0 then
+                    for _, s in ipairs(soldItems) do
+                        table.insert(boothState.soldLog, {
+                            name = s.name,
+                            price = s.price,
+                            qty = s.qty,
+                            time = s.time,
+                        })
+                    end
+                    notifySold(soldItems, current)
+                end
+                boothState.lastSnapshot = current
+            end
+        end)
+    end)
+end
+
+local function stopBoothTracking()
+    if boothConn then
+        boothConn:Disconnect()
+        boothConn = nil
+        sendWebhook("⏹️ Tracking stopped — " .. player.Name,
+            "Booth tracking disabled.", 15158332, nil)
+    end
+end
+
+local Window = WindUI:CreateWindow({
+    Title = "TeeHub - Death Ball",
+    Icon = "activity",
+    Author = "Trading Lobby",
+    Folder = "teehub",
+    Size = UDim2.fromOffset(580, 460),
+    MinSize = Vector2.new(560, 350),
+    MaxSize = Vector2.new(850, 560),
+    Transparent = true,
+    Theme = "Dark",
+    Resizable = true,
+    SideBarWidth = 200,
+    BackgroundImageTransparency = 0.42,
+    HideSearchBar = true,
+    ScrollBarEnabled = false,
+    User = {
+        Enabled = true,
+        Anonymous = false,
+        Callback = function()
+            WindUI:Notify({ Title = "Your Profile", Content = "literally you lol", Duration = 3 })
+        end
+    }
+})
+
+local Main = Window:Tab({ Title = "Main", Icon = "box", Locked = true  })
+local Player = Window:Tab({ Title = "Player", Icon = "user", Locked = true  })
+local Tele = Window:Tab({ Title = "Teleports", Icon = "cloud", Locked = true  })
+local Misc = Window:Tab({ Title = "Misc", Icon = "cpu", Locked = false })
+local WebhookTab = Window:Tab({ Title = "Webhook", Icon = "rss", Locked = false })
+
+WebhookTab:Input({
+    Title = "Discord Webhook URL",
+    Default = WEBHOOK_URL,
+    Callback = function(val)
+        WEBHOOK_URL = val
+        WindUI:Notify({ Title = "Webhook", Content = "URL saved!", Duration = 2 })
+    end,
+})
+
+WebhookTab:Slider({
+    Title = "Check interval (sec)",
+    Desc = "How often to check the booth for sales",
+    Step = 1,
+    Value = { Min = 10, Max = 300, Default = 30 },
+    Callback = function(val)
+        boothState.checkInterval = val
+    end,
+})
+
+WebhookTab:Toggle({
+    Title = "Booth sale tracking",
+    Icon = "shopping-cart",
+    Desc = "Keep booth menu open for tracking to work",
+    Default = false,
+    Callback = function(state)
+        boothState.enabled = state
+        if state then startBoothTracking() else stopBoothTracking() end
+    end,
+})
+
+WebhookTab:Button({
+    Title = "Booth snapshot",
+    Desc = "Send current booth items",
+    Callback = function()
+        local current = scanBoothItems()
+        local text = ""
+        for _, data in pairs(current) do
+            local _, rarity, icon = getRarityColor(data.price)
+            text = text .. string.format("• %s **%s** — %d × 💜 %s\n",
+                icon, data.name, data.qty, fmt(data.price))
+        end
+        if text == "" then text = "*Booth is empty or closed*" end
+        sendWebhook("📦 Booth snapshot — " .. player.Name,
+            "**Items in booth right now:**\n" .. text, 16776960, nil)
+        WindUI:Notify({ Title = "Webhook", Content = "Snapshot sent!", Duration = 3 })
+    end,
+})
+
+WebhookTab:Button({
+    Title = "Sales log",
+    Desc = "Send everything sold this session",
+    Callback = function()
+        if #boothState.soldLog == 0 then
+            WindUI:Notify({ Title = "Webhook", Content = "Log is empty.", Duration = 2 })
+            return
+        end
+        local text = ""
+        for _, s in ipairs(boothState.soldLog) do
+            local _, rarity, icon = getRarityColor(s.price)
+            text = text .. string.format("• %s `%s` — %d × 💜 %s  (%s)\n",
+                icon, s.name, s.qty, fmt(s.price), s.time)
+        end
+        sendWebhook("📜 Sales log — " .. player.Name,
+            "**All sales this session:**\n" .. text, 10181046, nil)
+        WindUI:Notify({ Title = "Webhook", Content = "Log sent!", Duration = 3 })
+    end,
+})
+
+local gui = Instance.new("ScreenGui")
+gui.ResetOnSpawn = false
+gui.IgnoreGuiInset = true
+gui.Parent = player:WaitForChild("PlayerGui")
+
+local black = Instance.new("Frame")
+black.Parent = gui
+black.Size = UDim2.fromScale(1, 1)
+black.Position = UDim2.fromScale(0, 0)
+black.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+black.ZIndex = 5
+black.Visible = false
+black.Active = false
+
+local states = {
+    screenMode = false,
+    antiIdle   = false,
+}
+
+local renderConn
+local antiIdleConn
+
+Misc:Toggle({
+    Title = "Anti-AFK",
+    Icon = "activity",
+    Default = false,
+    Callback = function(state)
+        states.antiIdle = state
+        if state then
+            antiIdleConn = player.Idled:Connect(function()
+                VirtualUser:CaptureController()
+                VirtualUser:ClickButton2(Vector2.new())
+            end)
+        else
+            if antiIdleConn then antiIdleConn:Disconnect(); antiIdleConn = nil end
+        end
+    end,
+})
+
+Misc:Toggle({
+    Title = "3D-Render",
+    Icon = "monitor-off",
+    Desc = "Black screen + 3D-rendering disabled",
+    Default = false,
+    Callback = function(state)
+        states.screenMode = state
+        black.Visible = state
+        if state then
+            renderConn = RunService.RenderStepped:Connect(function()
+                RunService:Set3dRenderingEnabled(false)
+            end)
+        else
+            if renderConn then renderConn:Disconnect(); renderConn = nil end
+            RunService:Set3dRenderingEnabled(true)
+        end
+    end,
+})
+
+Misc:Divider()
+
+Misc:Keybind({
+    Title = "Close Window",
+    Desc = "Keybind to close & open menu",
+    Value = "RightAlt",
+    Callback = function(v)
+        Window:SetToggleKey(Enum.KeyCode[v])
+    end,
+})
