@@ -9,8 +9,9 @@ local player = Players.LocalPlayer
 local CONFIG_PATH = "teehub/config.json"
 
 local config = {
-    webhookUrl   = "https://discord.com/api/webhooks/YOUR_WEBHOOK_HERE",
+    webhookUrl = "https://discord.com/api/webhooks/YOUR_WEBHOOK_HERE",
     closeKeybind = "RightAlt",
+    pingUserId = "",
 }
 
 local function ensureFolder()
@@ -36,6 +37,7 @@ local function loadConfig()
         if ok and result then
             config.webhookUrl = result.webhookUrl or config.webhookUrl
             config.closeKeybind = result.closeKeybind or config.closeKeybind
+            config.pingUserId = result.pingUserId or config.pingUserId
         end
     else
         saveConfig()
@@ -72,13 +74,17 @@ local function fmt(n)
     return tostring(n):reverse():gsub("%d%d%d", "%1,"):reverse():gsub("^,", "")
 end
 
-local function sendEmbed(embedData)
+local function sendEmbed(embedData, pingContent)
     local url = config.webhookUrl
     if url == "" or url == "https://discord.com/api/webhooks/YOUR_WEBHOOK_HERE" then
         warn("[TeeHub] Webhook URL not set!")
         return
     end
-    local payload = HttpService:JSONEncode({ embeds = { embedData } })
+    local body = { embeds = { embedData } }
+    if pingContent and pingContent ~= "" then
+        body.content = pingContent
+    end
+    local payload = HttpService:JSONEncode(body)
     http_request({
         Url = url,
         Method = "POST",
@@ -163,6 +169,12 @@ local function notifySold(soldItems, remaining)
         for _, item in ipairs(soldItems) do
             local earned = item.price * item.qty
             local color, rarity, icon = getRarityColor(item.price)
+
+            local pingContent = ""
+            if config.pingUserId ~= "" then
+                pingContent = "<@" .. config.pingUserId .. ">"
+            end
+
             sendEmbed({
                 title = "💰 Sold: " .. item.name,
                 description = string.format(
@@ -172,7 +184,8 @@ local function notifySold(soldItems, remaining)
                 color = color,
                 footer = { text = "TeeHub Booth Tracker" },
                 timestamp = os.date("!%Y-%m-%dT%H:%M:%SZ"),
-            })
+            }, pingContent)
+
             task.wait(0.5)
         end
         local remText = ""
@@ -279,6 +292,21 @@ WebhookTab:Input({
         config.webhookUrl = val
         saveConfig()
         WindUI:Notify({ Title = "Webhook", Content = "URL saved!", Duration = 2 })
+    end,
+})
+
+WebhookTab:Input({
+    Title = "Discord Ping User ID",
+    Desc = "Id to ping when sending webhook (leave blank to disable)",
+    Default = config.pingUserId,
+    Callback = function(val)
+        config.pingUserId = val
+        saveConfig()
+        if val ~= "" then
+            WindUI:Notify({ Title = "Ping", Content = "User ID saved", Duration = 2 })
+        else
+            WindUI:Notify({ Title = "Ping", Content = "Ping disabled", Duration = 2 })
+        end
     end,
 })
 
