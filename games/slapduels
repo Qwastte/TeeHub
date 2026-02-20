@@ -150,13 +150,6 @@ local Button = Tab3:Button({
     Callback = removewalls
 })
 
-Window:Tag({
-    Title = "v0.0.5",
-    Icon = "github",
-    Color = Color3.fromHex("#30ff6a"),
-    Radius = 10, -- from 0 to 13
-})
-
 local Keybind = Tab3:Keybind({
     Title = "Close Window",
     Desc = "Keybind to close & open menu",
