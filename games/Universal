@@ -4,8 +4,6 @@ local Players = game:GetService("Players")
 local Lighting = game:GetService("Lighting")
 local RunService = game:GetService("RunService")
 local VirtualUser = game:GetService("VirtualUser")
-local TweenService = game:GetService("TweenService")
-local Stats = game:GetService("Stats")
 local player = Players.LocalPlayer
 
 
@@ -55,21 +53,12 @@ black.ZIndex = 5
 black.Visible = false
 black.Active = false
 
-for _, v in ipairs(Lighting:GetChildren()) do
-    if v:IsA("BloomEffect") or v:IsA("SunRaysEffect") or v:IsA("DepthOfFieldEffect") or v:IsA("ColorCorrectionEffect") then
-        v:Destroy()
-    end
-end
-
 local states = {
     screenMode = false,
-    potatoMode = false,
-    noLights   = false,
     antiIdle   = false,
 }
 
 local renderConn
-local lightConn
 local antiIdleConn
 
 Misc:Toggle({
@@ -86,60 +75,6 @@ Misc:Toggle({
         else
             if antiIdleConn then antiIdleConn:Disconnect(); antiIdleConn = nil end
         end
-    end,
-})
-
-local function applyNoLights(on)
-    for _, v in ipairs(workspace:GetDescendants()) do
-        if v:IsA("PointLight") or v:IsA("SpotLight") or v:IsA("SurfaceLight") then
-            v.Enabled = not on
-        end
-    end
-    if on then
-        if not lightConn then
-            lightConn = workspace.DescendantAdded:Connect(function(obj)
-                if states.noLights then
-                    if obj:IsA("PointLight") or obj:IsA("SpotLight") or obj:IsA("SurfaceLight") then
-                        obj.Enabled = false
-                    end
-                end
-            end)
-        end
-    else
-        if lightConn then lightConn:Disconnect(); lightConn = nil end
-    end
-end
-
-local function applyPotatoMode(on)
-    for _, obj in ipairs(workspace:GetDescendants()) do
-        if obj:IsA("BasePart") then
-            if on then
-                obj.Material = Enum.Material.Plastic
-                obj.Reflectance = 0
-                obj.CastShadow = false
-            else
-                obj.CastShadow = true
-            end
-        elseif obj:IsA("Texture") or obj:IsA("Decal") or obj:IsA("SurfaceAppearance") then
-            obj.Transparency = on and 1 or 0
-        end
-    end
-end
-
-Misc:Toggle({
-    Title = "Potato Mode",
-    Icon = "cpu",
-    Default = false,
-    Callback = function(state)
-        states.potatoMode = state
-        states.noLights = state
-
-        applyPotatoMode(state)
-        applyNoLights(state)
-
-        Lighting.GlobalShadows = not state
-        Lighting.EnvironmentDiffuseScale  = state and 0 or 1
-        Lighting.EnvironmentSpecularScale = state and 0 or 1
     end,
 })
 
