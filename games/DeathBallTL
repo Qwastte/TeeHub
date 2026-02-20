@@ -34,7 +34,7 @@ local function loadConfig()
             return HttpService:JSONDecode(readfile(CONFIG_PATH))
         end)
         if ok and result then
-            config.webhookUrl   = result.webhookUrl   or config.webhookUrl
+            config.webhookUrl = result.webhookUrl or config.webhookUrl
             config.closeKeybind = result.closeKeybind or config.closeKeybind
         end
     else
