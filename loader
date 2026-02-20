@@ -8,8 +8,8 @@ local games = {
     [{14839391229}] = "https://raw.githubusercontent.com/Qwastte/TeeHub/refs/heads/main/games/apeirophobiac2",
     [{142823291}] = "https://raw.githubusercontent.com/Qwastte/TeeHub/refs/heads/main/games/MurderMystery2",
     [{113402871616247}] = "https://raw.githubusercontent.com/Qwastte/TeeHub/refs/heads/main/games/jtmkpdh",
-    [{103579327715933}] = "https://raw.githubusercontent.com/Qwastte/TeeHub/refs/heads/main/games/findthedurr"
-    [{119260352090770}] = "https://raw.githubusercontent.com/Qwastte/TeeHub/refs/heads/main/games/DeathBallTL"
+    [{103579327715933}] = "https://raw.githubusercontent.com/Qwastte/TeeHub/refs/heads/main/games/findthedurr",
+    [{119260352090770}] = "https://raw.githubusercontent.com/Qwastte/TeeHub/refs/heads/main/games/DeathBallTL",
 }
 
 WindUI:SetNotificationLower(true)
