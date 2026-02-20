@@ -534,13 +534,6 @@ local Window = WindUI:CreateWindow({
     },
 })
 
-Window:Tag({
-    Title = "v0.0.3b",
-    Icon = "github",
-    Color = Color3.fromHex("#30ff6a"),
-    Radius = 10, -- from 0 to 13
-})
-
 local Tab = Window:Tab({ Title = "Main", Icon = "user", Locked = false })
 local Tab2 = Window:Tab({ Title = "Level related stuff", Icon = "cloud", Locked = false })
 local Tab3 = Window:Tab({ Title = "Misc", Icon = "droplet", Locked = false })
