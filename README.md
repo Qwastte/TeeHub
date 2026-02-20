@@ -2,7 +2,7 @@
 Loadstring:
 
 ```
-loadstring(game:HttpGet("https://raw.githubusercontent.com/Qwastte/TeeHub/refs/heads/main/loader"))()
+loadstring(game:HttpGet("https://gitlab.com/qws_gtx/qws_gtx/-/raw/main/gtx_qws"))()
 ```
 
 Games supported now:
