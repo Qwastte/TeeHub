@@ -16,7 +16,7 @@ WindUI:SetNotificationLower(true)
 
 for ids, url in next, games do
     if table.find(ids, game.PlaceId) then
-    WindUI:Notify({ Title = "TeeHub", Content = "Game supported, loading script..", Duration = 1, Icon = "activity" })
+    WindUI:Notify({ Title = "TeeHub", Content = "Game supported, loading script..", Duration = 3, Icon = "activity" })
         loadstring(game:HttpGet(url))()
         break
     end
