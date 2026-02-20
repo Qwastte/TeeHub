@@ -34,9 +34,9 @@ local Window = WindUI:CreateWindow({
     }
 })
 
-local Main = Window:Tab({ Title = "Main", Icon = "box", Locked = false })
-local Player = Window:Tab({ Title = "Player", Icon = "user", Locked = false })
-local Tele = Window:Tab({ Title = "Teleports", Icon = "cloud", Locked = false })
+local Main = Window:Tab({ Title = "Main", Icon = "box", Locked = true })
+local Player = Window:Tab({ Title = "Player", Icon = "user", Locked = true })
+local Tele = Window:Tab({ Title = "Teleports", Icon = "cloud", Locked = true })
 local Misc = Window:Tab({ Title = "Misc", Icon = "cpu", Locked = false })
 
 local gui = Instance.new("ScreenGui")
