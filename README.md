@@ -7,6 +7,7 @@ loadstring(game:HttpGet("https://raw.githubusercontent.com/Qwastte/TeeHub/refs/h
 
 Games supported now:
 + **Universal**
++ [**Death Ball - Trading Lobby**](https://www.roblox.com/games/15002061926/Death-Ball)
 + [**Jump Into Pocoyo**](https://www.roblox.com/games/108143110454419/Jump-Into-Pocoyo)
 + [**Jump To Meet KPop Demon Hunters**](https://www.roblox.com/games/113402871616247/Jump-To-Meet-KPop-Demon-Hunters)
 + [**Find The Durr**](https://www.roblox.com/games/103579327715933/)
