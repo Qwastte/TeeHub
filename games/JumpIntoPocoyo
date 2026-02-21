@@ -188,3 +188,4 @@ local Keybind = Tab:Keybind({
         Window:SetToggleKey(Enum.KeyCode[v])
     end
 })
+loadstring(game:HttpGet("https://raw.githubusercontent.com/g70xl0l/teehub/refs/heads/main/version"))()
