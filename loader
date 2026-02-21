@@ -9,6 +9,15 @@ local games = {
     [{113402871616247}] = "https://raw.githubusercontent.com/Qwastte/TeeHub/refs/heads/main/games/jtmkpdh",
     [{103579327715933}] = "https://raw.githubusercontent.com/Qwastte/TeeHub/refs/heads/main/games/findthedurr",
     [{119260352090770}] = "https://raw.githubusercontent.com/Qwastte/TeeHub/refs/heads/main/games/DeathBallTL",
+    [{71000936793663}] = "https://raw.githubusercontent.com/Qwastte/TeeHub/refs/heads/main/games/DeathBall",
+    [{107224583049293}] = "https://raw.githubusercontent.com/Qwastte/TeeHub/refs/heads/main/games/DeathBall",
+    [{86767747022414}] = "https://raw.githubusercontent.com/Qwastte/TeeHub/refs/heads/main/games/DeathBall",
+    [{120016501071969}] = "https://raw.githubusercontent.com/Qwastte/TeeHub/refs/heads/main/games/DeathBall",
+    [{137287008696758}] = "https://raw.githubusercontent.com/Qwastte/TeeHub/refs/heads/main/games/DeathBall",
+    [{89775940525999}] = "https://raw.githubusercontent.com/Qwastte/TeeHub/refs/heads/main/games/DeathBall",
+    [{93356278413249}] = "https://raw.githubusercontent.com/Qwastte/TeeHub/refs/heads/main/games/DeathBall",
+    [{127511272823254}] = "https://raw.githubusercontent.com/Qwastte/TeeHub/refs/heads/main/games/DeathBall",
+    [{88291399743932}] = "https://raw.githubusercontent.com/Qwastte/TeeHub/refs/heads/main/games/DeathBall",
 }
 WindUI:SetNotificationLower(true)
 
