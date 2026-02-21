@@ -29,3 +29,5 @@ local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/rel
 })
 --]]
 WindUI:Notify({ Title = "TeeHub", Content = "Apeirophobia Chapter 2 is unavailable right now.", Duration = 3, Icon = "activity" })
+
+loadstring(game:HttpGet("https://raw.githubusercontent.com/g70xl0l/teehub/refs/heads/main/version"))()
