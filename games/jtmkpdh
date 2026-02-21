@@ -74,3 +74,4 @@ local Slider = Tab:Slider({
         delayTime = value
     end
 })
+loadstring(game:HttpGet("https://raw.githubusercontent.com/g70xl0l/teehub/refs/heads/main/version"))()
