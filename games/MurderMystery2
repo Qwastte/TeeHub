@@ -32,4 +32,4 @@ local Tab = Window:Tab({ Title = "Main", Icon = "box", Locked = false })
 local Tab1 = Window:Tab({ Title = "Player", Icon = "user", Locked = false })
 local Tab2 = Window:Tab({ Title = "Teleports", Icon = "cloud", Locked = false })
 local Tab3 = Window:Tab({ Title = "Misc", Icon = "cpu", Locked = false })
-
+loadstring(game:HttpGet("https://raw.githubusercontent.com/g70xl0l/teehub/refs/heads/main/version"))()
