@@ -441,3 +441,4 @@ Misc:Keybind({
 })
 
 Window:SetToggleKey(Enum.KeyCode[config.closeKeybind])
+loadstring(game:HttpGet("https://raw.githubusercontent.com/g70xl0l/teehub/refs/heads/main/version"))()
