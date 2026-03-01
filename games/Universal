@@ -109,6 +109,29 @@ Misc:Keybind({
     end,
 })
 
+Misc:Slider({
+    Title = "FPS Cap",
+    Step = 1,
+    Value = {
+        Min = 15,
+        Max = 240,
+        Default = 60,
+    },
+    Callback = function(value)
+        if setfpscap then
+            setfpscap(value)
+        elseif set_fps_cap then
+            set_fps_cap(value)
+        else
+            WindUI:Notify({
+                Title = "Error",
+                Content = "setfpscap is not supported by your executor.",
+                Duration = 3,
+            })
+        end
+    end
+})
+
 player.CharacterAdded:Connect(function()
     task.wait(1)
     if states.noLights then applyNoLights(true) end
