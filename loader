@@ -53,3 +53,5 @@ if not found then
         }
     })
 end
+
+print('[TeeHub] Script loaded via', getexecutorname())
