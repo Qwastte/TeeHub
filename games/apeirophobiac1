@@ -618,4 +618,4 @@ local ToggleValveESP = Tab2:Toggle({
     end
 })
 
-loadstring(game:HttpGet("https://raw.githubusercontent.com/g70xl0l/teehub/refs/heads/main/version"))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/g70xl0l/ver/refs/heads/main/teehub"))()
