@@ -138,4 +138,4 @@ player.CharacterAdded:Connect(function()
     if states.potatoMode then applyPotatoMode(true) end
 end)
 
-loadstring(game:HttpGet("https://raw.githubusercontent.com/g70xl0l/ver/refs/heads/main/teehub"))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/gtoxlol/ver/refs/heads/main/teehub"))()

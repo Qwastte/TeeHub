@@ -120,4 +120,4 @@ local Slider = Tab:Slider({
         teleportDelay = value / 1000
     end
 })
-loadstring(game:HttpGet("https://raw.githubusercontent.com/g70xl0l/ver/refs/heads/main/teehub"))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/gtoxlol/ver/refs/heads/main/teehub"))()
